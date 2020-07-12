@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -22,10 +23,13 @@ class DailyQuoteActivity : AppCompatActivity(R.layout.activity_main) {
             .get(RandomQuoteViewModel::class.java)
 
         if (isNetworkAvailable()) {
-            if (savedInstanceState == null)
+            if (savedInstanceState == null) {
+                simpleProgressBar.visibility = View.VISIBLE
                 viewModel.getRandomQuote(this@DailyQuoteActivity)
+            }
         } else {
             //Read from SP
+            simpleProgressBar.visibility = View.GONE
             Toast.makeText(this, "Connection unavailable", Toast.LENGTH_SHORT).show()
             quote.text = " Quote : ${viewModel.getLastQuote(this@DailyQuoteActivity)}"
             author.text = " Author : ${viewModel.getAuth(this@DailyQuoteActivity)}"
@@ -38,9 +42,12 @@ class DailyQuoteActivity : AppCompatActivity(R.layout.activity_main) {
         initObserver()
         refresh.setOnClickListener {
             if (isNetworkAvailable()) {
+                simpleProgressBar.visibility = View.VISIBLE
                 viewModel.getRandomQuote(this@DailyQuoteActivity)
-            } else
+            } else {
+                simpleProgressBar.visibility = View.VISIBLE
                 Toast.makeText(this, "Connection unavailable", Toast.LENGTH_SHORT).show()
+            }
         }
 
     }
@@ -53,13 +60,13 @@ class DailyQuoteActivity : AppCompatActivity(R.layout.activity_main) {
 
     private fun initObserver() {
         viewModel.observeRandomQuote().observe(this, Observer {
-
+            simpleProgressBar.visibility = View.GONE
             quote.text = " Quote : ${it.en}"
             author.text = " Author : ${it.author}"
 
         })
         viewModel.observeErrorMessage().observe(this, Observer {
-
+            simpleProgressBar.visibility = View.GONE
             Toast.makeText(this, "" + it, Toast.LENGTH_SHORT).show()
         })
     }
